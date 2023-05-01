@@ -8,6 +8,7 @@ from num2words import num2words
 
 
 #UTILITY FUNCTIONS
+#F1 : Digits to letters
 @xlo.func
 def chiffre_en_lettre(chiffre : float,langu ='fr') -> str:
     return num2words(chiffre,lang=langu)
@@ -16,7 +17,7 @@ def serialDateToDatetime(DateCol):
     epoch = pd.Timestamp('1899-12-30')
     return pd.to_datetime(DateCol, unit='D', origin=epoch)
 
-
+#F2 : Transform a range to dataframe with given headins and specifiy date column
 @xlo.func
 def TO_DF_HEADINGS(data, name_of_date_col: str = None) -> xlo.Cache:
     df = pd.DataFrame(data[1:], columns=data[0])
@@ -41,7 +42,7 @@ class Interv:
     def __str__(self) -> str:
         return f'Interval [{self.start},{self.end}], Id={self.serial}, overlap score = {self.ol_score}'
 
-
+#F3 : find overlaps in different intervals based on a scoring system
 @xlo.func
 def IntOverlap(int_range) -> PDFrame:
     arr = []
