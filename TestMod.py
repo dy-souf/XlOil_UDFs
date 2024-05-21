@@ -5,7 +5,14 @@ import numpy as np
 from itertools import groupby
 from operator import itemgetter
 from num2words import num2words
+import portion as por
 
+import xloil.matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+
+
+from datetime import datetime
 
 #UTILITY FUNCTIONS
 #F1 : Digits to letters
@@ -13,11 +20,12 @@ from num2words import num2words
 def chiffre_en_lettre(chiffre : float,langu ='fr') -> str:
     return num2words(chiffre,lang=langu)
 
+#F2 : Correct date conversion from excel
 def serialDateToDatetime(DateCol):
     epoch = pd.Timestamp('1899-12-30')
     return pd.to_datetime(DateCol, unit='D', origin=epoch)
 
-#F2 : Transform a range to dataframe with given headins and specifiy date column
+#F3 : Transform a range to dataframe with given headins and specifiy date column
 @xlo.func
 def TO_DF_HEADINGS(data, name_of_date_col: str = None) -> xlo.Cache:
     df = pd.DataFrame(data[1:], columns=data[0])
@@ -26,7 +34,7 @@ def TO_DF_HEADINGS(data, name_of_date_col: str = None) -> xlo.Cache:
                                                     .astype(int))
     return df
 
-
+# Interval class
 class Interv:
     def __init__(self, start, end, serial=0, ol_score=0) -> None:
         self.start = start
@@ -42,7 +50,7 @@ class Interv:
     def __str__(self) -> str:
         return f'Interval [{self.start},{self.end}], Id={self.serial}, overlap score = {self.ol_score}'
 
-#F3 : find overlaps in different intervals based on a scoring system
+#F4 : find overlaps in different intervals based on a scoring system
 @xlo.func
 def IntOverlap(int_range) -> PDFrame:
     arr = []
@@ -78,7 +86,7 @@ def IntOverlap(int_range) -> PDFrame:
     df.sort_values(by=['Start'], inplace=True)
     return df
 
-# Sample function with argument help
+#F5 Sample function with argument help
 @xlo.func(args={'arr': 'Array to be squared'},
           name='SQUARE',
           help='Returns the square of an array')
@@ -96,7 +104,7 @@ def divby2(num):
     return tst
 
 
-
+#F6 function to merge intervals
 # Python program to merge overlapping Intervals in
 # O(n Log n) time and O(1) extra space
 @xlo.func
@@ -125,3 +133,114 @@ def mergeIntervals(arr):
             arr[index] = arr[i]
             L.append(arr[index])
     return np.unique(L, axis=0)
+
+
+#F7 unite intervals
+#union of intervals with help from the portion library 
+#recursive recUne and a conversion function     
+def recUne(arr):
+    if len(arr) == 0 :
+        return por.empty()
+    else :
+        intr = por.closed(arr[0][0],arr[0][1])
+        
+        return intr | recUne(np.delete(arr, 0, 0))
+  
+  
+#F8 difference between intervals 
+def recDiff(basearr,arr):
+
+       baseintr = por.closed(basearr[0,0],basearr[0,1]) 
+       for item in arr : 
+           intr =   por.closed(item[0],item[1])
+           baseintr = baseintr - intr
+       return baseintr
+
+@xlo.func
+def InterUne(intervals):
+    return [(x[1],x[2]) for x in por.to_data(recUne(intervals))]
+        
+@xlo.func
+def InterDiff(baseint,intervals):
+    return [(x[1],x[2]) for x in por.to_data(recDiff(baseint,intervals))]
+        
+
+#F9 function to plot figures 
+@xlo.func(macro=True)
+def pyTestPlot(x, y):
+    fig, ax = plt.subplots()
+    fig.set_size_inches(5,3)
+    ax.plot(x, y)
+    plt.xticks(rotation=20)
+    ax.legend(title='Fruit color')
+    return fig
+
+#F10 function to plot figures
+#with time series
+@xlo.func(macro=True)
+def pyTestPlot_date(dt: xlo.Array(int), y,hues,baseline):
+    x= serialDateToDatetime(dt)
+    c = np.random.randint(1, 5, size=100)
+    plt.rcParams['figure.dpi'] = 100
+    
+    fig, ax = plt.subplots()
+    fig.set_size_inches(8,5)
+    fig.colorbar(plt.cm.ScalarMappable(norm=Normalize(0, 1), cmap=plt.colormaps["plasma"]),
+             ax=ax, label="Tonnages")
+    
+    # Remove splines. Can be done one at a time or can slice with a list.
+    ax.spines[['top','right']].set_visible(False)
+    
+    ax.axhline(baseline, color ='Red',linestyle = 'dashed')
+    ax.scatter(x, y, c=hues,cmap = 'plasma')
+    
+    ax.plot([0.06, 0.82],[1.0, 1.0],transform=fig.transFigure,
+            clip_on=False, color='#040273', linewidth=.6)
+    ax.add_patch(plt.Rectangle((0.06,1),0.1,-0.02, facecolor='#040273', 
+                               transform=fig.transFigure, clip_on=False, linewidth = 0))
+    
+    # Add in title and subtitle
+    ax.text(x=0.06, y=.94, s="Enrobés etalés", transform=fig.transFigure,
+            ha='left', fontsize=13, weight='bold', alpha=.8)
+    ax.text(x=0.06, y=.905, s="Répartition de la mise en oeuvre par PK", 
+            transform=fig.transFigure, ha='left', fontsize=11, alpha=.8)
+    
+    plt.grid(axis = 'y')
+    plt.xticks(rotation=20)
+    ax.legend(title='Total enrobés journalier')
+    return fig
+
+
+#F10 function to plot figures
+#with time series
+@xlo.func(macro=True)
+def pyTestPlot_line(x, y):
+    
+    fig, ax = plt.subplots()
+    fig.set_size_inches(8,5)
+    middle = np.max(y)/2
+    
+    
+    ax.axhline(middle, color ='Red',linestyle = 'dashed')
+    ax.plot(x, y, color='black')
+    plt.xticks(rotation=20)
+    ax.legend(title='Production cummulée')
+    return fig
+
+import sqlite3
+import os
+#Playing with sqlite3 dbs
+@xlo.func
+def MATERIEL_MOJA(mtcl):
+    
+    filename = os.path.abspath(__file__)
+    dbdir = filename.rstrip('TestMod.py')
+    dbpath = os.path.join(dbdir, "bareme.db")
+
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()
+    c.execute("SELECT cat,unite,cout FROM mat WHERE mtcl= ?",(mtcl,))
+    ret  = c.fetchall()
+    conn.commit()
+    conn.close()
+    return ret
