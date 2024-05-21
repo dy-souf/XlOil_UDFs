@@ -84,3 +84,44 @@ def IntOverlap(int_range) -> PDFrame:
           help='Returns the square of an array')
 def square(arr):
     return arr * arr
+
+# Divisiblity by 2
+@xlo.func(args={'num': 'Number to be tested'},
+          name='DIVBY2',
+          help='Returns the number')
+def divby2(num):
+    tst = num
+    while tst % 2 == 0 :
+        tst = tst // 2
+    return tst
+
+
+
+# Python program to merge overlapping Intervals in
+# O(n Log n) time and O(1) extra space
+@xlo.func
+def mergeIntervals(arr):
+    
+    arr = arr.tolist()
+	# Sorting based on the increasing order
+	# of the start intervals
+    arr.sort(key=lambda x: x[0])
+
+	# Stores index of last element
+	# in output array (modified arr[])
+    index = 0
+
+
+	# Traverse all input Intervals starting from
+	# second interval
+    L=[]
+    for i in range(1, len(arr)):
+        if (arr[index][1] >= arr[i][0]):
+            arr[index][1] = max(arr[index][1], arr[i][1])
+            L.append(arr[index])
+            
+        else:
+            index = index + 1
+            arr[index] = arr[i]
+            L.append(arr[index])
+    return np.unique(L, axis=0)
