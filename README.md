@@ -1,2 +1,2 @@
 # XlOil_UDFs
-a couple of udfs I use for excel in my daily use
+Some of the udfs I use for excel in conjunction with xloil
