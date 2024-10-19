@@ -195,8 +195,8 @@ def pyTestPlot_date(dt: xlo.Array(int), y,hues,baseline):
     ax.scatter(x, y, c=hues,cmap = 'plasma')
     
     ax.plot([0.06, 0.82],[1.0, 1.0],transform=fig.transFigure,
-            clip_on=False, color='#040273', linewidth=.6)
-    ax.add_patch(plt.Rectangle((0.06,1),0.1,-0.02, facecolor='#040273', 
+            clip_on=False, color='#f00c0c', linewidth=.6)
+    ax.add_patch(plt.Rectangle((0.06,1),0.1,-0.02, facecolor='#f00c0c', 
                                transform=fig.transFigure, clip_on=False, linewidth = 0))
     
     # Add in title and subtitle
@@ -226,21 +226,3 @@ def pyTestPlot_line(x, y):
     plt.xticks(rotation=20)
     ax.legend(title='Production cummulée')
     return fig
-
-import sqlite3
-import os
-#Playing with sqlite3 dbs
-@xlo.func
-def MATERIEL_MOJA(mtcl):
-    
-    filename = os.path.abspath(__file__)
-    dbdir = filename.rstrip('TestMod.py')
-    dbpath = os.path.join(dbdir, "bareme.db")
-
-    conn = sqlite3.connect(dbpath)
-    c = conn.cursor()
-    c.execute("SELECT cat,unite,cout FROM mat WHERE mtcl= ?",(mtcl,))
-    ret  = c.fetchall()
-    conn.commit()
-    conn.close()
-    return ret

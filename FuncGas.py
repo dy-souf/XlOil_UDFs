@@ -1,7 +1,7 @@
 import xloil as xlo
 import pandas as pd
 import numpy as np
-from xloil.pandas import PDFrame
+from xloil import StatusBar
 import xloil.matplotlib
 import matplotlib.pyplot as plt
 import sqlite3
@@ -30,10 +30,13 @@ def detail_gas(mtcl,flipswitch = 0):
 
 @xlo.func
 def recap_gas(mtcl,flipswitch = 0):
-    
-    data = detail_gas(mtcl, flipswitch)
-    sub_data = data[['QteS','Compteur','cons_per_unit']]
-    return sub_data.describe(percentiles=[.25, .5, .75])
+    with StatusBar(1000) as status:
+        status.msg('Khdam daba')
+        data = detail_gas(mtcl, flipswitch)
+        sub_data = data[['QteS','Compteur','cons_per_unit']]
+        status.msg('Salina')
+        return sub_data.describe(percentiles=[.25, .5, .75])
+        
 
 
 @xlo.func
